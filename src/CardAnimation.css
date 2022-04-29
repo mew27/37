@@ -1,0 +1,15 @@
+.whiteSquare {
+    position: relative;
+    width: 17px;
+    height: 20px;
+    background-color: white;
+    top: 4px;
+    left: 3px;
+}
+
+.animationPlaceholder {
+  position:absolute;
+  z-index: 1;
+  width: 116px;
+  height:180px;
+}

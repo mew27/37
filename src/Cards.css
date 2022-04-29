@@ -1,0 +1,18 @@
+.whiteSquare {
+    position: relative;
+    width: 17px;
+    height: 20px;
+    background-color: white;
+    top: 4px;
+    left: 3px;
+}
+
+.CardDiv:hover {
+    margin-bottom: 50px;
+    transition: margin-bottom 0.5s;
+}
+
+.CardDiv {
+    margin-bottom: 0px;
+    transition: margin-bottom 0.5s;
+}
