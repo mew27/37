@@ -16,15 +16,9 @@ class PlayedCards extends React.Component {
     }
 
     componentDidMount() {
-        //PubSub.clearAllSubscriptions();
-        //console.log("Already called?")
-        //PubSub.subscribe('PLAYED_CARDS', (msg, data) => {this.setState({played : data})})
 
         PubSub.subscribe('PREPARE_ANIMATION', (msg, data) => {
-          //console.log("Starting position:")
-          //console.log(data)
-          //console.log("Ending position: ")
-          //console.log(this.playedcardDiv.current.getBoundingClientRect())
+
           console.log(this.playedcardDiv.current.lastChild)
           let nextCardElement = this.playedcardDiv.current.lastChild
 
@@ -54,6 +48,7 @@ class PlayedCards extends React.Component {
             //console.log()
             return {played : newPlayed.flatMap(x => x)}
           })
+          PubSub.publish('MADE_MOVE', '')
         })
     }
 
@@ -62,14 +57,9 @@ class PlayedCards extends React.Component {
       PubSub.unsubscribe('PREPARE_ANIMATION')
     }
 
-    // componentDidUpdate(prevProps) {
-    //     if (prevProps.played != this.props.played) {
-    //         this.setState({played: this.props.played})
-    //     }
-    // }
 
     render() {
-        //console.log("Played Cards value = " + this.state.played)
+
         return (
         <>
         <div className="PlayedCardsDiv" ref={this.playedcardDiv} style={{alignItems: "flex-start"}}>

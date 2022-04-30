@@ -44,8 +44,15 @@ class App extends React.Component {
 
   componentDidMount() {
     PubSub.subscribe('MADE_MOVE', (msg, data) => {
+      let newTurn = (this.state.turn + 1) % 2
 
+      this.setState({turn : newTurn})
     })
+  }
+
+  componentWillUnmount() {
+
+    PubSub.unsubscribe('MADE_MOVE')
   }
 
 
@@ -66,7 +73,7 @@ class App extends React.Component {
       <CardAnimation></CardAnimation>
       <div className="TableContainer">
         <div className="Table">
-          <CardHolder yourCards={this.drawCards(10)} enemyCards={this.drawCards(10)}></CardHolder>
+          <CardHolder turn={this.state.turn} yourCards={this.drawCards(10)} enemyCards={this.drawCards(10)}></CardHolder>
         </div>
       </div>
 
