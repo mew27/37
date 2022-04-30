@@ -20,7 +20,7 @@ class Card extends React.Component {
         PubSub.subscribe('PLAY_CARD', (msg, data) => {
           //console.log(this.props.cardtype)
           if (data === this.props.cardtype) {
-            console.log(this.cardDiv)
+            console.log(data + " " + this.props.cardtype + " PORCODIO; PERCHé SONO NULL? " + this.cardDiv.current)
             this.playCard()
           }
         })

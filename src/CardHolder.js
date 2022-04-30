@@ -21,15 +21,10 @@ class CardHolder extends React.Component {
     }
 
     componentDidUpdate() {
-      //console.log("Im getting called two times !")
+      console.log("Im getting called two times !")
       if (this.props.turn == 0) {
 
-        let chosenIndex = Math.floor(Math.random()*this.enemyCards.length)
-        let playedCard = this.enemyCards[chosenIndex]
-        this.enemyCards.splice(chosenIndex, 1)
-
-        PubSub.publish('PLAY_CARD', playedCard)
-        console.log("Playing " + playedCard)
+        PubSub.publish('MAKE_MOVE', this.enemyCards)
       }
     }
 

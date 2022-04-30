@@ -13,6 +13,26 @@ class PlayedCards extends React.Component {
 
         this.playedcardDiv = React.createRef();
 
+        PubSub.subscribe('MAKE_MOVE' , (msg, enemyCards) => {
+          if(this.state.played !== null) {
+            for (let i = 0; i < enemyCards.length; i++) {
+              console.log(enemyCards[i] + " - " + this.state.played[0])
+              if (enemyCards[i].split("_")[0] == this.state.played[0].split("_")[0]) {
+                var chosenIndex = i
+                var playedCard = enemyCards[chosenIndex]
+                console.log("Playing " + playedCard)
+                PubSub.publish('PLAY_CARD', playedCard)
+                break
+              }
+            }
+          } else {
+            var chosenIndex = Math.floor(Math.random() * enemyCards.length)
+            var playedCard = enemyCards[chosenIndex]
+            //console.log("Playing " + playedCard)
+            PubSub.publish('PLAY_CARD', playedCard)
+        }
+        })
+
     }
 
     componentDidMount() {
@@ -50,6 +70,9 @@ class PlayedCards extends React.Component {
           })
           PubSub.publish('MADE_MOVE', '')
         })
+    }
+
+    componentDidUpdate() {
     }
 
     componentWillUnmount() {
