@@ -76,7 +76,7 @@ class CardAnimation extends React.Component {
             this.cardAnimationDiv.current.style.visibility = "hidden"
             this.cardAnimationDiv.current.style.top = data.ending.top + "px"
             this.cardAnimationDiv.current.style.left = data.ending.left + "px"
-            PubSub.publish("ANIMATION_FINISHED", data.cardType)
+            PubSub.publish("ANIMATION_FINISHED", {cardType : data.cardType, playedByPlayer: data.playedByPlayer})
           }
 
         }, 16)

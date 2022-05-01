@@ -20,12 +20,46 @@ function shuffle(array) {
         array[randomIndex], array[currentIndex]];
     }
 
-    return array;
+    return array
   }
+
+
+var valueCards = [1, 1/3, 1/3, 0, 0, 0, 0, 1/3, 1/3, 1/3]
+var importanceCard = [8, 9, 10, 1, 2, 3, 4, 5, 6, 7]
+
+function calculatePoint(playedCards, playedByPlayer, lastMover) {
+
+  if (playedCards[0] == playedByPlayer) {
+    var playedByCpu = playedCards[1]
+  } else {
+    var playedByCpu = playedCards[0]
+  }
+
+  var semeCardCpu = playedByCpu.split("_")[0]
+  var numCardCpu = parseInt(playedByCpu.split("_")[1])
+
+  var semeCardPlayer = playedByPlayer.split("_")[0]
+  var numCardPlayer = parseInt(playedByPlayer.split("_")[1])
+
+  var points = valueCards[numCardCpu - 1] + valueCards[numCardPlayer - 1]
+
+  if (semeCardCpu != semeCardPlayer) {
+    if (lastMover == "Player")
+      return {winner : "CPU", points : points}
+    else
+      return {winner : "Player", points : points}
+  } else {
+    if (importanceCard[numCardPlayer - 1] > importanceCard[numCardCpu - 1])
+      return {winner : "Player", points : points}
+    else
+      return {winner : "CPU", points : points}
+  }
+}
+
 
 class App extends React.Component {
 
-  state = {turn : 1}
+  state = {turn : 0, lastMover: "None", lastScorerPoint : null}
 
   constructor (props) {
     super(props)
@@ -44,14 +78,39 @@ class App extends React.Component {
 
   componentDidMount() {
     PubSub.subscribe('MADE_MOVE', (msg, data) => {
-      let newTurn = (this.state.turn + 1) % 2
 
-      this.setState({turn : newTurn})
+      if (this.state.lastScorerPoint === null) {
+        let newTurn = (this.state.turn + 1) % 3
+
+        this.setState({turn : newTurn, lastMover : "Player"})
+      } else {
+        if (this.state.turn == 0) {
+          if (this.state.lastScorerPoint == "Player")
+            this.setState({turn : 1, lastMover : "Player"})
+          else
+            this.setState({turn : 2, lastMover : "Player"})
+        } else if (this.state.turn == 1) {
+          if (this.state.lastScorerPoint == "CPU")
+            this.setState({turn : 0, lastMover : "CPU"})
+          else
+            this.setState({turn : 2, lastMover : "CPU"})
+        }
+      }
+    })
+
+    PubSub.subscribe('ADVANCE_TURN', (msg, data) => {
+      //let lastMover = data.lastTurn == 0 ? "Player" : "CPU"
+      //console.log("received data : " + data.played)
+      let result = calculatePoint(data.played, data.playedByPlayer, this.state.lastMover)
+
+      //console.log("played = " + data.played + "lastMover " + this.state.lastMover + " winner = " + result.winner)
+
+      this.setState({turn : result.winner == "Player" ? 0 : 1, lastScorerPoint : result.winner})
     })
   }
 
   componentWillUnmount() {
-
+    PubSub.unsubscribe('ADVANCE_TURN')
     PubSub.unsubscribe('MADE_MOVE')
   }
 

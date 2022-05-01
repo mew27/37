@@ -6,7 +6,16 @@ import PubSub from 'pubsub-js'
 
 class PlayedCards extends React.Component {
 
-    state = {played: null}
+    state = {played: null, playedByPlayer: null}
+
+    alreadyPlayed  = false
+
+    playCard(card) {
+      if (!this.alreadyPlayed) {
+        this.alreadyPlayed = true
+        PubSub.publish('PLAY_CARD', card)
+      }
+    }
 
     constructor(props) {
         super(props)
@@ -14,23 +23,25 @@ class PlayedCards extends React.Component {
         this.playedcardDiv = React.createRef();
 
         PubSub.subscribe('MAKE_MOVE' , (msg, enemyCards) => {
-          if(this.state.played !== null) {
-            for (let i = 0; i < enemyCards.length; i++) {
-              console.log(enemyCards[i] + " - " + this.state.played[0])
-              if (enemyCards[i].split("_")[0] == this.state.played[0].split("_")[0]) {
-                var chosenIndex = i
-                var playedCard = enemyCards[chosenIndex]
-                console.log("Playing " + playedCard)
-                PubSub.publish('PLAY_CARD', playedCard)
-                break
+          if (this.props.turn == 1) {
+            if(this.state.played !== null) {
+              for (let i = 0; i < enemyCards.length; i++) {
+                console.log(enemyCards[i] + " - " + this.state.played[0])
+                if (enemyCards[i].split("_")[0] == this.state.played[0].split("_")[0]) {
+                  var chosenIndex = i
+                  var playedCard = enemyCards[chosenIndex]
+                  console.log("Playing " + playedCard)
+                  this.playCard(playedCard)
+                  return
+                }
               }
+              var playedCard = enemyCards[enemyCards.length - 1]
+              this.playCard(playedCard)
+            } else {
+              var playedCard = enemyCards[Math.floor(Math.random()*enemyCards.length)];
+              this.playCard(playedCard)
             }
-          } else {
-            var chosenIndex = Math.floor(Math.random() * enemyCards.length)
-            var playedCard = enemyCards[chosenIndex]
-            //console.log("Playing " + playedCard)
-            PubSub.publish('PLAY_CARD', playedCard)
-        }
+          }
         })
 
     }
@@ -56,7 +67,8 @@ class PlayedCards extends React.Component {
               left:   nextCardElement.getBoundingClientRect().left
             },
             cardStyle : data.cardStyle,
-            cardType : data.cardType
+            cardType : data.cardType,
+            playedByPlayer : data.playedByPlayer
           }
 
           PubSub.publish('START_ANIMATION', animationState)
@@ -64,15 +76,28 @@ class PlayedCards extends React.Component {
 
         PubSub.subscribe('ANIMATION_FINISHED', (msg, data) => {
           this.setState((prevState) => {
-            let newPlayed = prevState.played ? [prevState.played, data] : [data]
-            //console.log()
-            return {played : newPlayed.flatMap(x => x)}
+            let newPlayed = prevState.played ? [prevState.played, data.cardType] : [data.cardType]
+
+            if (data.playedByPlayer)
+              return {played : newPlayed.flatMap(x => x), playedByPlayer : data.cardType}
+            else
+              return {played : newPlayed.flatMap(x => x)}
           })
+          this.alreadyPlayed = false
           PubSub.publish('MADE_MOVE', '')
         })
     }
 
     componentDidUpdate() {
+      if (this.state.played !== null && this.state.played.length == 2 && this.state.playedByPlayer != null) {
+        var goodOlState = this.state
+        setTimeout(() => {
+          //console.log("played state" + this.state.played)
+          PubSub.publish('ADVANCE_TURN', {lastTurn : this.props.turn, played : goodOlState.played, playedByPlayer : goodOlState.playedByPlayer})
+          //console.log("Te lo invio un po' di volte")
+          this.setState({played : null, playedByPlayer : null})
+        }, 500)
+      }
     }
 
     componentWillUnmount() {

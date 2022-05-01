@@ -15,14 +15,20 @@ class CardHolder extends React.Component {
 
     constructor(props) {
         super(props)
+
+        PubSub.subscribe('PLAY_CARD', (msg, data) => {
+          //console.log(this.props.cardtype
+          this.enemyCards.splice(this.enemyCards.indexOf(data), 1)
+        })
     }
 
     componentDidMount() {
     }
 
     componentDidUpdate() {
-      console.log("Im getting called two times !")
-      if (this.props.turn == 0) {
+      // console.log("Im getting called two times !")
+
+      if (this.props.turn == 1) {
 
         PubSub.publish('MAKE_MOVE', this.enemyCards)
       }
@@ -38,13 +44,13 @@ class CardHolder extends React.Component {
         return (
         <>
             <div className="CardHolderContainer" style={{top:"0px", alignItems: "flex-start"}}>
-                {this.initialEnemyCards.map((val, index) => {return <Card notClickable={true} key={index} cardtype={val} hideCard={true}></Card>})}
+                {this.initialEnemyCards.map((val, index) => {return <Card clickable={false} key={index} cardtype={val} hideCard={true}></Card>})}
             </div>
 
-            <PlayedCards></PlayedCards>
+            <PlayedCards turn={this.props.turn}></PlayedCards>
 
             <div className="CardHolderContainer" style={{bottom: "0px", alignItems: "flex-end"}}>
-                {this.initialYourCards.map((val, index) => {return <Card notClickable={this.props.turn == 0} key={index} cardtype={val} ></Card>})}
+                {this.initialYourCards.map((val, index) => {return <Card clickable={this.props.turn === 0} key={index} cardtype={val} ></Card>})}
             </div>
         </>)
     }

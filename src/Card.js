@@ -19,9 +19,9 @@ class Card extends React.Component {
 
         PubSub.subscribe('PLAY_CARD', (msg, data) => {
           //console.log(this.props.cardtype)
-          if (data === this.props.cardtype) {
-            console.log(data + " " + this.props.cardtype + " PORCODIO; PERCHé SONO NULL? " + this.cardDiv.current)
-            this.playCard()
+          if (data === this.props.cardtype && this.cardDiv.current !== null) {
+            //console.log(data + " " + this.props.cardtype + " PORCODIO; PERCHé SONO NULL? " + this.cardDiv.current)
+            this.playCard(false)
           }
         })
     }
@@ -31,7 +31,7 @@ class Card extends React.Component {
     }
 
     componentWillUnmount() {
-      //PubSub.unsubscribe('PLAY_CARD')
+      //PubSub.unsubscribe('PLAY_CARD_' + this.props.cardtype)
     }
 
     componentDidUpdate() {
@@ -94,7 +94,7 @@ class Card extends React.Component {
       }
     }
 
-    playCard() {
+    playCard(playedByPlayer) {
       //console.log("Sending Prepare animation message with bounding_rect = ")
       let thisBoundingRect = this.cardDiv.current.getBoundingClientRect();
 
@@ -103,14 +103,14 @@ class Card extends React.Component {
 
       let thisCardStyle = this.getCardStyle(this.seme_carta, this.numero_carta, false)
 
-      PubSub.publish('PREPARE_ANIMATION', {rect: thisBoundingRect, cardStyle: thisCardStyle, cardType: this.props.cardtype})
+      PubSub.publish('PREPARE_ANIMATION', {rect: thisBoundingRect, cardStyle: thisCardStyle, cardType: this.props.cardtype, playedByPlayer : playedByPlayer})
       this.setState({played : true})
       //console.log(thisBoundingRect
     }
 
     startAnimation() {
-        if (!this.props.notClickable) {
-          this.playCard()
+        if (this.props.clickable) {
+          this.playCard(true)
         }
     }
 
