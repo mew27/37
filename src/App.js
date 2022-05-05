@@ -97,6 +97,7 @@ class App extends React.Component {
     this.state.deck = newdeck
 
     this.makeMove = this.makeMove.bind(this)
+    this.getPlayableCards = this.getPlayableCards.bind(this)
   }
 
   makeMove(cardPlayed) {
@@ -118,6 +119,17 @@ class App extends React.Component {
 
       return {turn : prevState.nextTurn, nextTurn : 2, cardsOnTable : cardsOnTable, playerCards : playerCards, enemyCards : enemyCards, lastMover : Mover}
     })
+  }
+
+  getPlayableCards(cards) {
+    if (Object.keys(this.state.cardsOnTable).length === 0) {
+      return cards
+    }
+
+    let playableSeme = Object.keys(this.state.cardsOnTable)[0].split("_")[0]
+    let filteredCards = cards.filter((x) => x.split("_")[0] == playableSeme)
+    
+    return filteredCards.length > 0  ? filteredCards : cards
   }
 
   componentDidMount() {
@@ -177,7 +189,7 @@ class App extends React.Component {
       <CardAnimation></CardAnimation>
       <div className="TableContainer">
         <div className="Table">
-          <CardHolder cardsOnTable={this.state.cardsOnTable} turn={this.state.turn} yourCards={this.state.playerCards} enemyCards={this.state.enemyCards} makeMove={this.makeMove}></CardHolder>
+          <CardHolder getPlayableCards={this.getPlayableCards} cardsOnTable={this.state.cardsOnTable} turn={this.state.turn} yourCards={this.state.playerCards} enemyCards={this.state.enemyCards} makeMove={this.makeMove}></CardHolder>
         </div>
       </div>
       </>

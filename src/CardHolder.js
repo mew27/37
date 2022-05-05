@@ -21,6 +21,8 @@ class CardHolder extends React.Component {
     }
 
     render() {
+        let playablePlayerCards = this.props.getPlayableCards(this.props.yourCards)
+
         return (
         <>
             <div className="CardHolderContainer" style={{top:"0px", alignItems: "flex-start"}}>
@@ -30,7 +32,7 @@ class CardHolder extends React.Component {
             <PlayedCards cardsPlayed={this.props.cardsOnTable}></PlayedCards>
 
             <div className="CardHolderContainer" style={{bottom: "0px", alignItems: "flex-end"}}>
-                {this.props.yourCards.map((val, index) => {return <Card clickable={this.props.turn === 0} makeMove={this.props.makeMove} key={val} cardtype={val} ></Card>})}
+                {this.props.yourCards.map((val, index) => {return <Card playable={playablePlayerCards.includes(val)} clickable={this.props.turn === 0} makeMove={this.props.makeMove} key={val} cardtype={val} ></Card>})}
             </div>
         </>)
     }

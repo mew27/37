@@ -107,12 +107,14 @@ class Card extends React.Component {
     }
 
     render() {
-        const cardStyle = this.getCardStyle(this.seme_carta, this.numero_carta, this.props.hideCard)
+        let {playable, clickable, makeMove, cardtype, hideCard} = this.props
+
+        const cardStyle = this.getCardStyle(this.seme_carta, this.numero_carta, hideCard)
 
         return (
             <>
-                <div className="CardDiv" style={cardStyle} onClick={() => this.props.clickable ? this.props.makeMove(this.props.cardtype) : null}>
-                    {this.numero_carta > 7 && !this.props.hideCard ? <div className="whiteSquare"></div> : null}
+                <div className={"CardDiv" + (playable ? " CardPlayable" : "")} style={cardStyle} onClick={() => (clickable && playable) ? makeMove(cardtype) : null}>
+                    {this.numero_carta > 7 && !hideCard ? <div className="whiteSquare"></div> : null}
                 </div>
             </>
         )
