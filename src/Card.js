@@ -6,32 +6,21 @@ import PubSub from 'pubsub-js'
 
 class Card extends React.Component {
 
-    state = {played: false}
-
     seme_carta = this.props.cardtype.split("_")[0]
     numero_carta = this.props.cardtype.split("_")[1]
 
     constructor(props) {
         super(props)
 
-        this.cardDiv = React.createRef();
-        this.startAnimation = this.startAnimation.bind(this)
+        //this.cardDiv = React.createRef();
+        //this.startAnimation = this.startAnimation.bind(this)
 
-        PubSub.subscribe('PLAY_CARD', (msg, data) => {
-          //console.log(this.props.cardtype)
-          if (data === this.props.cardtype && this.cardDiv.current !== null) {
-            //console.log(data + " " + this.props.cardtype + " PORCODIO; PERCHé SONO NULL? " + this.cardDiv.current)
-            this.playCard(false)
-          }
-        })
     }
 
     componentDidMount() {
-        //console.log("Mounting many times...")
     }
 
     componentWillUnmount() {
-      //PubSub.unsubscribe('PLAY_CARD_' + this.props.cardtype)
     }
 
     componentDidUpdate() {
@@ -90,37 +79,39 @@ class Card extends React.Component {
           backgroundPosition: position_x + "px " + position_y + "px",
           width: "116px",
           height:"180px",
-          visibility: (this.state.played || this.props.notVisible ? "hidden" : null)
+          //visibility: (this.state.played || this.props.notVisible ? "hidden" : null)
       }
     }
 
     playCard(playedByPlayer) {
       //console.log("Sending Prepare animation message with bounding_rect = ")
-      let thisBoundingRect = this.cardDiv.current.getBoundingClientRect();
+      //let thisBoundingRect = this.cardDiv.current.getBoundingClientRect();
 
-      var seme_carta = this.props.cardtype.split("_")[0]
-      var numero_carta = this.props.cardtype.split("_")[1]
+      //var seme_carta = this.props.cardtype.split("_")[0]
+      //var numero_carta = this.props.cardtype.split("_")[1]
 
-      let thisCardStyle = this.getCardStyle(this.seme_carta, this.numero_carta, false)
+      //let thisCardStyle = this.getCardStyle(this.seme_carta, this.numero_carta, false)
 
-      PubSub.publish('PREPARE_ANIMATION', {rect: thisBoundingRect, cardStyle: thisCardStyle, cardType: this.props.cardtype, playedByPlayer : playedByPlayer})
-      this.setState({played : true})
-      //console.log(thisBoundingRect
+      //PubSub.publish('PREPARE_ANIMATION', {rect: thisBoundingRect, cardStyle: thisCardStyle, cardType: this.props.cardtype, playedByPlayer : playedByPlayer})
     }
 
     startAnimation() {
+      /*
         if (this.props.clickable) {
-          this.playCard(true)
+          if (!this.waitingPlayed) {
+            PubSub.publish('GET_PLAYED_CARDS', this.props.cardtype)
+            this.waitingPlayed = true
+          }
         }
+      */
     }
 
     render() {
-
         const cardStyle = this.getCardStyle(this.seme_carta, this.numero_carta, this.props.hideCard)
 
         return (
             <>
-                <div ref={this.cardDiv} className="CardDiv" style={cardStyle} onClick={this.startAnimation}>
+                <div className="CardDiv" style={cardStyle} onClick={() => this.props.clickable ? this.props.makeMove(this.props.cardtype) : null}>
                     {this.numero_carta > 7 && !this.props.hideCard ? <div className="whiteSquare"></div> : null}
                 </div>
             </>

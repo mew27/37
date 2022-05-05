@@ -27,12 +27,17 @@ function shuffle(array) {
 var valueCards = [1, 1/3, 1/3, 0, 0, 0, 0, 1/3, 1/3, 1/3]
 var importanceCard = [8, 9, 10, 1, 2, 3, 4, 5, 6, 7]
 
-function calculatePoint(playedCards, playedByPlayer, lastMover) {
+function calculatePoint(cardsOnTable, lastMover) {
 
-  if (playedCards[0] == playedByPlayer) {
-    var playedByCpu = playedCards[1]
-  } else {
-    var playedByCpu = playedCards[0]
+  let playedByPlayer
+  let playedByCpu
+
+  for (let card in cardsOnTable) {
+    if (cardsOnTable[card] == "Player") {
+      playedByPlayer = card
+    } else {
+      playedByCpu = card
+    }
   }
 
   var semeCardCpu = playedByCpu.split("_")[0]
@@ -43,8 +48,8 @@ function calculatePoint(playedCards, playedByPlayer, lastMover) {
 
   var points = valueCards[numCardCpu - 1] + valueCards[numCardPlayer - 1]
 
-  if (semeCardCpu != semeCardPlayer) {
-    if (lastMover == "Player")
+  if (semeCardCpu !== semeCardPlayer) {
+    if (lastMover === "Player")
       return {winner : "CPU", points : points}
     else
       return {winner : "Player", points : points}
@@ -59,83 +64,122 @@ function calculatePoint(playedCards, playedByPlayer, lastMover) {
 
 class App extends React.Component {
 
-  state = {turn : 0, lastMover: "None", lastScorerPoint : null}
-
-  constructor (props) {
-    super(props)
-
-    this.deck = []
-
-    let semi = ["Spade", "Denari", "Bastoni", "Coppe"]
-
-    for (const seme of semi) {
-        for (let i = 1; i < 11; i++) {
-            this.deck.push(seme + "_" + i.toString())
-        }
-    }
-    shuffle(this.deck);
-  }
-
-  componentDidMount() {
-    PubSub.subscribe('MADE_MOVE', (msg, data) => {
-
-      if (this.state.lastScorerPoint === null) {
-        let newTurn = (this.state.turn + 1) % 3
-
-        this.setState({turn : newTurn, lastMover : "Player"})
-      } else {
-        if (this.state.turn == 0) {
-          if (this.state.lastScorerPoint == "Player")
-            this.setState({turn : 1, lastMover : "Player"})
-          else
-            this.setState({turn : 2, lastMover : "Player"})
-        } else if (this.state.turn == 1) {
-          if (this.state.lastScorerPoint == "CPU")
-            this.setState({turn : 0, lastMover : "CPU"})
-          else
-            this.setState({turn : 2, lastMover : "CPU"})
-        }
-      }
-    })
-
-    PubSub.subscribe('ADVANCE_TURN', (msg, data) => {
-      //let lastMover = data.lastTurn == 0 ? "Player" : "CPU"
-      //console.log("received data : " + data.played)
-      let result = calculatePoint(data.played, data.playedByPlayer, this.state.lastMover)
-
-      //console.log("played = " + data.played + "lastMover " + this.state.lastMover + " winner = " + result.winner)
-
-      this.setState({turn : result.winner == "Player" ? 0 : 1, lastScorerPoint : result.winner})
-    })
-  }
-
-  componentWillUnmount() {
-    PubSub.unsubscribe('ADVANCE_TURN')
-    PubSub.unsubscribe('MADE_MOVE')
-  }
+  state = {deck : [], turn : 0, nextTurn : 1, playStarted : 1,  enemyCards : [],  playerCards : [], cardsOnTable : {}, playerPoints : 0, cpuPoints : 0, lastMover : "None"}
 
 
-  drawCards(numDraw) {
+  drawCards(numDraw, deck) {
       var drawnCards = []
 
       for(var i = 0; i < numDraw; i++) {
-          drawnCards.push(this.deck.pop())
+          drawnCards.push(deck.pop())
       }
 
       return drawnCards
   }
 
+  constructor (props) {
+    super(props)
+
+    let semi = ["Spade", "Denari", "Bastoni", "Coppe"]
+
+    for (const seme of semi) {
+        for (let i = 1; i < 11; i++) {
+            this.state.deck.push(seme + "_" + i.toString())
+        }
+    }
+    shuffle(this.state.deck);
+
+    let newdeck = this.state.deck.splice(0, this.state.deck.length)
+
+    this.state.enemyCards = this.drawCards(10, newdeck)
+    this.state.playerCards = this.drawCards(10, newdeck)
+
+    this.state.deck = newdeck
+
+    this.makeMove = this.makeMove.bind(this)
+  }
+
+  makeMove(cardPlayed) {
+    //console.log("Making move " + cardPlayed)
+    this.setState((prevState) => {
+      let playerCards = prevState.playerCards
+      let enemyCards = prevState.enemyCards
+
+      if (prevState.turn === 0)
+        playerCards = playerCards.filter((x) => x !== cardPlayed)
+      else
+        enemyCards = enemyCards.filter((x) => x !== cardPlayed)
+
+      let Mover = prevState.turn === 0 ? "Player" : "CPU"
+      let cardsOnTable = prevState.cardsOnTable
+      cardsOnTable[cardPlayed] = Mover
+
+      console.log(playerCards)
+
+      return {turn : prevState.nextTurn, nextTurn : 2, cardsOnTable : cardsOnTable, playerCards : playerCards, enemyCards : enemyCards, lastMover : Mover}
+    })
+  }
+
+  componentDidMount() {
+  }
+
+  componentDidUpdate() {
+    let turn = 0
+    let nextTurn = 1
+    let addPlayerPoints = 0
+    let addCpuPoints = 0
+
+    if (this.state.turn === 2) {
+      let result = calculatePoint(this.state.cardsOnTable, this.state.lastMover)
+
+      if (result.winner === "Player") {
+        turn = 0
+        nextTurn = 1
+        addPlayerPoints = result.points
+      } else {
+        turn = 1
+        nextTurn = 0
+        addCpuPoints = result.points
+      }
+
+
+      this.setState({turn : turn, nextTurn : nextTurn, playerPoints : this.state.playerPoints + addPlayerPoints, cpuPoints : this.state.cpuPoints + addCpuPoints, cardsOnTable : {}})
+    } else if (this.state.turn === 1) {
+      let chosenCard
+
+      if (Object.keys(this.state.cardsOnTable).length === 0) {
+        chosenCard = this.state.enemyCards[Math.floor(Math.random() * this.state.enemyCards.length)]
+      } else {
+        for (let card of this.state.enemyCards) {
+          if (card.split("_")[0] == Object.keys(this.state.cardsOnTable)[0].split("_")[0]) {
+            chosenCard = card
+            break
+          }
+        }
+      }
+
+      if (chosenCard == undefined)
+        chosenCard = this.state.enemyCards[Math.floor(Math.random() * this.state.enemyCards.length)]
+
+      this.makeMove(chosenCard)
+      console.log("Playing card "+ chosenCard)
+    }
+  }
+
+  componentWillUnmount() {
+
+  }
 
   render() {
+    //console.log(this.state.cardsOnTable)
     return (
       <>
       <CardAnimation></CardAnimation>
       <div className="TableContainer">
         <div className="Table">
-          <CardHolder turn={this.state.turn} yourCards={this.drawCards(10)} enemyCards={this.drawCards(10)}></CardHolder>
+          <CardHolder cardsOnTable={this.state.cardsOnTable} turn={this.state.turn} yourCards={this.state.playerCards} enemyCards={this.state.enemyCards} makeMove={this.makeMove}></CardHolder>
         </div>
       </div>
-
       </>
     );
   }
