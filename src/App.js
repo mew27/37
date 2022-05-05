@@ -64,7 +64,7 @@ function calculatePoint(cardsOnTable, lastMover) {
 
 class App extends React.Component {
 
-  state = {deck : [], turn : 0, nextTurn : 1, playStarted : 1,  enemyCards : [],  playerCards : [], cardsOnTable : {}, playerPoints : 0, cpuPoints : 0, lastMover : "None"}
+  state = {deck : [], finished : false, turn : 0, nextTurn : 1, playStarted : 1,  enemyCards : [],  playerCards : [], cardsOnTable : {}, playerPoints : 0, cpuPoints : 0, lastMover : "None"}
 
 
   drawCards(numDraw, deck) {
@@ -89,7 +89,7 @@ class App extends React.Component {
     }
     shuffle(this.state.deck);
 
-    let newdeck = this.state.deck.splice(0, this.state.deck.length)
+    let newdeck = this.state.deck.slice(0, this.state.deck.length)
 
     this.state.enemyCards = this.drawCards(10, newdeck)
     this.state.playerCards = this.drawCards(10, newdeck)
@@ -128,7 +128,7 @@ class App extends React.Component {
 
     let playableSeme = Object.keys(this.state.cardsOnTable)[0].split("_")[0]
     let filteredCards = cards.filter((x) => x.split("_")[0] == playableSeme)
-    
+
     return filteredCards.length > 0  ? filteredCards : cards
   }
 
@@ -154,8 +154,21 @@ class App extends React.Component {
         addCpuPoints = result.points
       }
 
+      let newPlayerCards = this.state.playerCards.slice(0, this.state.playerCards.length)
+      let newEnemyCards = this.state.enemyCards.slice(0, this.state.enemyCards.length)
 
-      this.setState({turn : turn, nextTurn : nextTurn, playerPoints : this.state.playerPoints + addPlayerPoints, cpuPoints : this.state.cpuPoints + addCpuPoints, cardsOnTable : {}})
+      let newdeck = this.state.deck.slice(0, this.state.deck.length)
+      let finished = false
+      console.log("state deck length (componentDidUpdate): " + this.state.deck.length)
+      if (this.state.deck.length !== 0) {
+        let drawnCards = this.drawCards(2, newdeck)
+        newPlayerCards.push(drawnCards[0])
+        newEnemyCards.push(drawnCards[1])
+      } else {
+        finished = true
+      }
+
+      this.setState({finished: finished, playerCards : newPlayerCards, enemyCards : newEnemyCards, deck : newdeck, turn : turn, nextTurn : nextTurn, playerPoints : this.state.playerPoints + addPlayerPoints, cpuPoints : this.state.cpuPoints + addCpuPoints, cardsOnTable : {}})
     } else if (this.state.turn === 1) {
       let chosenCard
 
@@ -183,7 +196,8 @@ class App extends React.Component {
   }
 
   render() {
-    //console.log(this.state.cardsOnTable)
+    console.log("state deck length (render): " + this.state.deck.length)
+
     return (
       <>
       <CardAnimation></CardAnimation>
