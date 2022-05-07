@@ -24,7 +24,8 @@ class Deck extends React.Component {
         if (this.props.deck.length !== 0) {
           return (
           <>
-          <div className="deckClass" style={cardStyle}>
+          <div id={this.props.deckPlaceholderId} className="deckClass deckPlaceholder" style={cardStyle}></div>
+          <div id={this.props.deckId} className="deckClass" style={cardStyle}>
           </div>
           </>)
         } else {

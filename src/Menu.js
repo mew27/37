@@ -41,8 +41,8 @@ class Menu extends React.Component {
             <div className="menuTitle">
               {menu.titleOption}
             </div>
-            <div className="menuOption" onClick={() => {this.props.playAgain()}}>
-              <div className="menuButton">
+            <div className="menuOption">
+              <div className="menuButton" onClick={() => {this.props.playAgain()}}>
                 <div className="buttonText">
                   {menu.subOption}
                 </div>
