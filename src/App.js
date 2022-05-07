@@ -5,6 +5,8 @@ import CardAnimation from './CardAnimation'
 import Deck from './Deck'
 import Menu from './Menu'
 import Scoreboard from './Scoreboard'
+import animateCard from './CardAnimation'
+import getCardStyle from './cardStyle'
 import React from 'react';
 
 function shuffle(array) {
@@ -68,7 +70,7 @@ function calculatePoint(cardsOnTable, lastMover) {
 
 class App extends React.Component {
 
-  state = {timeout : false, deck : [], finished : false, turn : 0, nextTurn : 1, playStarted : false,  enemyCards : [],  playerCards : [], cardsOnTable : {}, playerPoints : 0, cpuPoints : 0, lastMover : "None"}
+  state = {animating: false, timeout : false, deck : [], finished : false, turn : 0, nextTurn : 1, playStarted : false,  enemyCards : [],  playerCards : [], cardsOnTable : {}, playerPoints : 0, cpuPoints : 0, lastMover : "None"}
 
 
   drawCards(numDraw, deck) {
@@ -97,7 +99,7 @@ class App extends React.Component {
     enemyCards = this.drawCards(10, deck)
     playerCards = this.drawCards(10, deck)
 
-    return {timeout: false, deck : deck, playerCards : playerCards, enemyCards : enemyCards, finished: false, turn : 0, nextTurn : 1, playStarted : true, cardsOnTable : [],  playerPoints : 0, cpuPoints : 0, lastMover : "None"}
+    return {animating: false, timeout: false, deck : deck, playerCards : playerCards, enemyCards : enemyCards, finished: false, turn : 0, nextTurn : 1, playStarted : true, cardsOnTable : [],  playerPoints : 0, cpuPoints : 0, lastMover : "None"}
   }
 
   constructor (props) {
@@ -110,27 +112,20 @@ class App extends React.Component {
     this.playAgain = this.playAgain.bind(this)
   }
 
-  makeMove(cardPlayed) {
-    //console.log("Making move " + cardPlayed)
-    this.setState((prevState) => {
-      let playerCards = prevState.playerCards
-      let enemyCards = prevState.enemyCards
+  makeMove(cardPlayed, animatingCardDiv) {
 
-      if (prevState.turn === 0)
-        playerCards = playerCards.filter((x) => x !== cardPlayed)
-      else
-        enemyCards = enemyCards.filter((x) => x !== cardPlayed)
+    //console.log(animatingCardDiv)
+    let playerCards = this.state.playerCards
+    let enemyCards = this.state.enemyCards
 
-      let Mover = prevState.turn === 0 ? "Player" : "CPU"
-      let cardsOnTable = prevState.cardsOnTable
-      let timeout = false
-      cardsOnTable[cardPlayed] = Mover
+    if (this.state.turn === 0)
+      playerCards[playerCards.indexOf(cardPlayed)] = "Hidden_1"
+    else
+      enemyCards[enemyCards.indexOf(cardPlayed)] = "Hidden_1"
 
-      console.log(playerCards)
-      if (prevState.nextTurn === 2)
-        timeout = true
-      return {timeout : timeout, turn : prevState.nextTurn, nextTurn : 2, cardsOnTable : cardsOnTable, playerCards : playerCards, enemyCards : enemyCards, lastMover : Mover}
-    })
+    let Mover = this.state.turn === 0 ? "Player" : "CPU"
+
+    this.setState({animating: true, animatingCard : cardPlayed, animatingCardDiv: animatingCardDiv, playerCards : playerCards, enemyCards : enemyCards, lastMover : Mover})
   }
 
   getPlayableCards(cards) {
@@ -157,7 +152,7 @@ class App extends React.Component {
     let addPlayerPoints = 0
     let addCpuPoints = 0
 
-    if (this.state.turn === 2) {
+    if (this.state.turn === 2 && !this.state.animating) {
 
       if (this.state.timeout) {
         setTimeout(() => {this.setState({timeout: false})}, 1000)
@@ -186,11 +181,11 @@ class App extends React.Component {
 
       if (this.state.deck.length !== 0) {
         let drawnCards = this.drawCards(2, newdeck)
-        newPlayerCards.push(drawnCards[0])
-        newEnemyCards.push(drawnCards[1])
+        newPlayerCards[newPlayerCards.indexOf("Hidden_1")] = drawnCards[0]
+        newEnemyCards[newEnemyCards.indexOf("Hidden_1")] = drawnCards[1]
       }
 
-      if (this.state.playerCards.length == 0 && this.state.enemyCards.length == 0) {
+      if (this.state.playerCards.filter((x) => x != "Hidden_1").length == 0 && this.state.enemyCards.filter((x) => x != "Hidden_1").length == 0) {
         finished = true
         playStarted = false
         if (this.state.playerPoints > this.state.cpuPoints)
@@ -201,13 +196,14 @@ class App extends React.Component {
       }
 
       this.setState({finished: finished, playStarted : playStarted, playerCards : newPlayerCards, enemyCards : newEnemyCards, deck : newdeck, turn : turn, nextTurn : nextTurn, playerPoints : this.state.playerPoints + addPlayerPoints, cpuPoints : this.state.cpuPoints + addCpuPoints, cardsOnTable : {}})
-    } else if (this.state.turn === 1) {
+    } else if (this.state.turn === 1 && !this.state.animating && !this.state.finished) {
       let chosenCard
+      let chosableCards = this.state.enemyCards.filter((x) => x != "Hidden_1")
 
       if (Object.keys(this.state.cardsOnTable).length === 0) {
-        chosenCard = this.state.enemyCards[Math.floor(Math.random() * this.state.enemyCards.length)]
+        chosenCard = chosableCards[Math.floor(Math.random() * chosableCards.length)]
       } else {
-        for (let card of this.state.enemyCards) {
+        for (let card of chosableCards) {
           if (card.split("_")[0] == Object.keys(this.state.cardsOnTable)[0].split("_")[0]) {
             chosenCard = card
             break
@@ -216,10 +212,53 @@ class App extends React.Component {
       }
 
       if (chosenCard == undefined)
-        chosenCard = this.state.enemyCards[Math.floor(Math.random() * this.state.enemyCards.length)]
+        chosenCard = chosableCards[Math.floor(Math.random() * chosableCards.length)]
 
-      this.makeMove(chosenCard)
+      this.makeMove(chosenCard, document.getElementById(chosenCard).getBoundingClientRect())
       console.log("Playing card "+ chosenCard)
+    }
+
+    if (this.state.animating) {
+      let startingRect = this.state.animatingCardDiv
+      let endingRect
+
+      console.log("Animating card " + this.state.animatingCard)
+      console.log(startingRect)
+
+      let cardsPlayed = Object.keys(this.state.cardsOnTable)
+
+      if (cardsPlayed.length === 0) {
+        endingRect = document.getElementById("placeholderDiv_0").getBoundingClientRect()
+        console.log("Destination div : ")
+        console.log(endingRect)
+      } else {
+        endingRect = document.getElementById("placeholderDiv_1").getBoundingClientRect()
+        console.log("Destination div : ")
+        console.log(endingRect)
+      }
+
+      let divToAnimate = document.getElementById("animationPlaceholderId")
+      const animationStyle = getCardStyle(this.state.animatingCard.split("_")[0],this.state.animatingCard.split("_")[1], false)
+      //console.log(animationStyle)
+      for (const property in animationStyle)
+          divToAnimate.style[property] = animationStyle[property];
+
+      let data = {starting : startingRect, ending : endingRect}
+
+      animateCard(data, divToAnimate, () => {
+        this.setState((prevState) => {
+          let cardsOnTable = prevState.cardsOnTable
+          let timeout = false
+          cardsOnTable[prevState.animatingCard] = prevState.lastMover
+
+          if (prevState.nextTurn === 2)
+            timeout = true
+
+          return {animating: false, timeout : timeout, turn : prevState.nextTurn, nextTurn : 2, cardsOnTable : cardsOnTable}
+        })
+      })
+
+      //this.setState({animating: false})
     }
   }
 
@@ -231,12 +270,12 @@ class App extends React.Component {
 
     return (
       <>
+      <div id="animationPlaceholderId" className="animationPlaceholderDiv"></div>
       {!this.state.playStarted ? <Menu finished={this.state.finished} winner={this.state.winner} playAgain={this.playAgain}></Menu> : <Scoreboard cpuPoints={this.state.cpuPoints} playerPoints={this.state.playerPoints}></Scoreboard>}
       <Deck deck={this.state.deck}></Deck>
-      <CardAnimation></CardAnimation>
       <div className="TableContainer">
         <div className="Table">
-          <CardHolder getPlayableCards={this.getPlayableCards} cardsOnTable={this.state.cardsOnTable} turn={this.state.turn} yourCards={this.state.playerCards} enemyCards={this.state.enemyCards} makeMove={this.makeMove}></CardHolder>
+          <CardHolder getPlayableCards={this.getPlayableCards} cardsOnTable={this.state.cardsOnTable} animating={this.state.animating} turn={this.state.turn} yourCards={this.state.playerCards} enemyCards={this.state.enemyCards} makeMove={this.makeMove}></CardHolder>
         </div>
       </div>
       </>

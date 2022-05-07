@@ -22,13 +22,13 @@ function getCardStyle(seme_carta, numero_carta, hidden) {
 
       default:
           row = 4
-          console.log("Seme non valido.")
+          //console.log("Seme non valido.")
   }
 
   var column = parseInt(numero_carta)
 
   if (column === null || isNaN(column) || column < 1 || column > 10) {
-      console.log("Numero non valido.")
+      //console.log("Numero non valido.")
       //console.log(this.props.cardtype)
       column  = 2
   } else {
@@ -53,7 +53,7 @@ function getCardStyle(seme_carta, numero_carta, hidden) {
       backgroundPosition: position_x + "px " + position_y + "px",
       width: "116px",
       height:"180px",
-      //visibility: (this.state.played || this.props.notVisible ? "hidden" : null)
+      visibility: (seme_carta === "Hidden" ? "hidden" : null)
   }
 }
 
