@@ -2,7 +2,9 @@ import logo from './logo.svg';
 import './App.css';
 import CardHolder from './CardHolder';
 import CardAnimation from './CardAnimation'
-import PubSub from 'pubsub-js'
+import Deck from './Deck'
+import Menu from './Menu'
+import Scoreboard from './Scoreboard'
 import React from 'react';
 
 function shuffle(array) {
@@ -47,7 +49,9 @@ function calculatePoint(cardsOnTable, lastMover) {
   var numCardPlayer = parseInt(playedByPlayer.split("_")[1])
 
   var points = valueCards[numCardCpu - 1] + valueCards[numCardPlayer - 1]
-
+  if (isNaN(points)) {
+    console.log("Divento NAN !!! COME CRISTO")
+  }
   if (semeCardCpu !== semeCardPlayer) {
     if (lastMover === "Player")
       return {winner : "CPU", points : points}
@@ -64,7 +68,7 @@ function calculatePoint(cardsOnTable, lastMover) {
 
 class App extends React.Component {
 
-  state = {deck : [], finished : false, turn : 0, nextTurn : 1, playStarted : 1,  enemyCards : [],  playerCards : [], cardsOnTable : {}, playerPoints : 0, cpuPoints : 0, lastMover : "None"}
+  state = {timeout : false, deck : [], finished : false, turn : 0, nextTurn : 1, playStarted : false,  enemyCards : [],  playerCards : [], cardsOnTable : {}, playerPoints : 0, cpuPoints : 0, lastMover : "None"}
 
 
   drawCards(numDraw, deck) {
@@ -77,27 +81,33 @@ class App extends React.Component {
       return drawnCards
   }
 
-  constructor (props) {
-    super(props)
+  newGame() {
+    let deck = [], enemyCards, playerCards
 
     let semi = ["Spade", "Denari", "Bastoni", "Coppe"]
 
     for (const seme of semi) {
         for (let i = 1; i < 11; i++) {
-            this.state.deck.push(seme + "_" + i.toString())
+            deck.push(seme + "_" + i.toString())
         }
     }
-    shuffle(this.state.deck);
 
-    let newdeck = this.state.deck.slice(0, this.state.deck.length)
+    deck = shuffle(deck)
 
-    this.state.enemyCards = this.drawCards(10, newdeck)
-    this.state.playerCards = this.drawCards(10, newdeck)
+    enemyCards = this.drawCards(10, deck)
+    playerCards = this.drawCards(10, deck)
 
-    this.state.deck = newdeck
+    return {timeout: false, deck : deck, playerCards : playerCards, enemyCards : enemyCards, finished: false, turn : 0, nextTurn : 1, playStarted : true, cardsOnTable : [],  playerPoints : 0, cpuPoints : 0, lastMover : "None"}
+  }
+
+  constructor (props) {
+    super(props)
+
+    let newGameState = this.newGame()
 
     this.makeMove = this.makeMove.bind(this)
     this.getPlayableCards = this.getPlayableCards.bind(this)
+    this.playAgain = this.playAgain.bind(this)
   }
 
   makeMove(cardPlayed) {
@@ -113,11 +123,13 @@ class App extends React.Component {
 
       let Mover = prevState.turn === 0 ? "Player" : "CPU"
       let cardsOnTable = prevState.cardsOnTable
+      let timeout = false
       cardsOnTable[cardPlayed] = Mover
 
       console.log(playerCards)
-
-      return {turn : prevState.nextTurn, nextTurn : 2, cardsOnTable : cardsOnTable, playerCards : playerCards, enemyCards : enemyCards, lastMover : Mover}
+      if (prevState.nextTurn === 2)
+        timeout = true
+      return {timeout : timeout, turn : prevState.nextTurn, nextTurn : 2, cardsOnTable : cardsOnTable, playerCards : playerCards, enemyCards : enemyCards, lastMover : Mover}
     })
   }
 
@@ -132,6 +144,10 @@ class App extends React.Component {
     return filteredCards.length > 0  ? filteredCards : cards
   }
 
+  playAgain() {
+    this.setState(this.newGame())
+  }
+
   componentDidMount() {
   }
 
@@ -142,6 +158,12 @@ class App extends React.Component {
     let addCpuPoints = 0
 
     if (this.state.turn === 2) {
+
+      if (this.state.timeout) {
+        setTimeout(() => {this.setState({timeout: false})}, 1000)
+
+        return
+      }
       let result = calculatePoint(this.state.cardsOnTable, this.state.lastMover)
 
       if (result.winner === "Player") {
@@ -159,16 +181,26 @@ class App extends React.Component {
 
       let newdeck = this.state.deck.slice(0, this.state.deck.length)
       let finished = false
+      let playStarted = true
       console.log("state deck length (componentDidUpdate): " + this.state.deck.length)
+
       if (this.state.deck.length !== 0) {
         let drawnCards = this.drawCards(2, newdeck)
         newPlayerCards.push(drawnCards[0])
         newEnemyCards.push(drawnCards[1])
-      } else {
-        finished = true
       }
 
-      this.setState({finished: finished, playerCards : newPlayerCards, enemyCards : newEnemyCards, deck : newdeck, turn : turn, nextTurn : nextTurn, playerPoints : this.state.playerPoints + addPlayerPoints, cpuPoints : this.state.cpuPoints + addCpuPoints, cardsOnTable : {}})
+      if (this.state.playerCards.length == 0 && this.state.enemyCards.length == 0) {
+        finished = true
+        playStarted = false
+        if (this.state.playerPoints > this.state.cpuPoints)
+          this.setState({winner : "Player"})
+        else
+          this.setState({winner : "CPU"})
+
+      }
+
+      this.setState({finished: finished, playStarted : playStarted, playerCards : newPlayerCards, enemyCards : newEnemyCards, deck : newdeck, turn : turn, nextTurn : nextTurn, playerPoints : this.state.playerPoints + addPlayerPoints, cpuPoints : this.state.cpuPoints + addCpuPoints, cardsOnTable : {}})
     } else if (this.state.turn === 1) {
       let chosenCard
 
@@ -196,10 +228,11 @@ class App extends React.Component {
   }
 
   render() {
-    console.log("state deck length (render): " + this.state.deck.length)
 
     return (
       <>
+      {!this.state.playStarted ? <Menu finished={this.state.finished} winner={this.state.winner} playAgain={this.playAgain}></Menu> : <Scoreboard cpuPoints={this.state.cpuPoints} playerPoints={this.state.playerPoints}></Scoreboard>}
+      <Deck deck={this.state.deck}></Deck>
       <CardAnimation></CardAnimation>
       <div className="TableContainer">
         <div className="Table">

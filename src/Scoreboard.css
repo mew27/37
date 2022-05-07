@@ -1,0 +1,21 @@
+.scoreboardClass {
+  position:absolute;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 20px;
+  top : 0;
+  right : 0;
+  /*transform: translateY(+50%);*/
+  border-radius : 20px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.scoreboardElement {
+  flex: 1;
+  display: flex;
+  /*justify-content: center;*/
+  align-items: center;
+  margin: 20px;
+}

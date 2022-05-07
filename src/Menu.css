@@ -1,0 +1,46 @@
+.menuClass {
+  position: absolute;
+  z-index: 1;
+  width: 100vw;
+  height: 100vh;
+  backdrop-filter: blur(5px);
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  color: white;
+  align-items: center;
+}
+
+.menuTitle {
+  font-size : 50px;
+  font-weight: bold;
+  flex : 1;
+  text-align: center;
+}
+
+.menuOption {
+  font-size : 50px;
+  flex : 3;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.menuButton:active {
+  background-color: rgb(217, 217, 217);
+}
+
+.menuButton {
+  background-color: rgb(255, 255, 255);
+  color:black;
+  border-radius: 20px;
+  width:500px;
+  height:100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.buttonText {
+  text-align: center;
+}
