@@ -29,7 +29,7 @@ class Menu extends React.Component {
 
             menu.subOption = "Gioca ancora"
         } else {
-          menu.titleOption = "TRESSETTE by mew"
+          menu.titleOption = "TRESETTE by mew"
           menu.subOption = "Nuova partita"
         }
 

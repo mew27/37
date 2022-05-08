@@ -51,6 +51,7 @@ function getCardStyle(seme_carta, numero_carta, hidden) {
   return {
       backgroundImage: "url(" + deck + ")",
       backgroundPosition: position_x + "px " + position_y + "px",
+      minWidth: "116px",
       width: "116px",
       height:"180px",
       visibility: (seme_carta === "Hidden" ? "hidden" : null)

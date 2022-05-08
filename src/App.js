@@ -180,11 +180,6 @@ class App extends React.Component {
       if (this.state.deck.length !== 0) {
 
         this.setState({animating: true, deckAnimation: true, deckWho: "Player"})
-        /*
-        let drawnCards = this.drawCards(2, newdeck)
-        newPlayerCards[newPlayerCards.indexOf("Hidden_1")] = drawnCards[0]
-        newEnemyCards[newEnemyCards.indexOf("Hidden_1")] = drawnCards[1]
-        */
       }
 
       if (this.state.playerCards.filter((x) => x != "Hidden_1").length == 0 && this.state.enemyCards.filter((x) => x != "Hidden_1").length == 0) {
@@ -290,8 +285,6 @@ class App extends React.Component {
           })
         })
       }
-
-      //this.setState({animating: false})
     }
   }
 
@@ -303,7 +296,7 @@ class App extends React.Component {
 
     return (
       <>
-      <div id="animationPlaceholderId" className="animationPlaceholderDiv"><div className="whiteSquare"></div></div>
+      <div id="animationPlaceholderId" className="animationPlaceholderDiv">{this.state.animating ? <div className="whiteSquare"></div> : null}</div>
       {!this.state.playStarted ? <Menu finished={this.state.finished} winner={this.state.winner} playAgain={this.playAgain}></Menu> : <Scoreboard cpuPoints={this.state.cpuPoints} playerPoints={this.state.playerPoints}></Scoreboard>}
       <Deck deckId={"deckId"} deckPlaceholderId={"deckPlaceholderId"} deck={this.state.deck}></Deck>
       <div className="TableContainer">
