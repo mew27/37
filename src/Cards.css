@@ -8,11 +8,11 @@
 }
 
 .CardPlayable:hover {
-  margin-bottom: 50px;
-  transition: margin-bottom 0.5s;
+  transition: transform 0.5s;
+  transform : translateY(-50px);
 }
 
 .CardDiv {
-    margin-bottom: 0px;
-    transition: margin-bottom 0.5s;
+  transition: transform 0.5s;
+  transform : translateY(0px);
 }
