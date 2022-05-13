@@ -20,6 +20,7 @@ class Deck extends React.Component {
 
     render() {
         const cardStyle = getCardStyle("Denari", "3", true)
+        cardStyle.zIndex = 1;
 
         if (this.props.deck.length !== 0) {
           return (
