@@ -25,7 +25,7 @@ class CardHolder extends React.Component {
 
         return (
         <>
-            <div className="CardHolderContainer" style={{top:"0px", alignItems: "flex-start"}}>
+            <div className="CardHolderContainer enemyCardHolder" style={{top:"0px", alignItems: "flex-start"}}>
                 {this.props.enemyCards.map((val, index) => {return <Card position={"_E_" + index} clickable={false} key={val + "_" + index} cardtype={val} hideCard={true}></Card>})}
             </div>
 

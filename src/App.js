@@ -216,12 +216,13 @@ class App extends React.Component {
 
     if (this.state.animating) {
       if (this.state.deckAnimation) {
+        let tableRect = document.getElementsByClassName("Table")[0].getBoundingClientRect()
         let divToAnimate = document.getElementById("deckPlaceholderId")
         let startingRect = document.getElementById("deckId").getBoundingClientRect()
-        let nRect = {left : this.state.deckEnemyAnimationRect.left, bottom: this.state.deckEnemyAnimationRect.bottom, right : this.state.deckEnemyAnimationRect.right}
+        let nRect = {left : this.state.deckEnemyAnimationRect.left > tableRect.right - 116 ? tableRect.right - 116  : this.state.deckEnemyAnimationRect.left, bottom: this.state.deckEnemyAnimationRect.bottom, right : this.state.deckEnemyAnimationRect.right}
         nRect.top = parseInt(this.state.deckEnemyAnimationRect.top + 90)
 
-        let oRect = {left : this.state.deckPlayerAnimationRect.left, bottom: this.state.deckPlayerAnimationRect.bottom, right : this.state.deckPlayerAnimationRect.right}
+        let oRect = {left : this.state.deckPlayerAnimationRect.left > tableRect.right - 116  ? tableRect.right - 116  : this.state.deckPlayerAnimationRect.left, bottom: this.state.deckPlayerAnimationRect.bottom, right : this.state.deckPlayerAnimationRect.right}
         oRect.top = parseInt(this.state.deckPlayerAnimationRect.top + 90)
 
         let dataPlayer = {starting : startingRect, ending : oRect}

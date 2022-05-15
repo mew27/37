@@ -9,4 +9,7 @@
     overflow-x: scroll;
     justify-content: flex-start;
   }
+  .enemyCardHolder {
+    overflow-x: hidden;
+  }
 }

@@ -19,3 +19,10 @@
   align-items: center;
   margin: 20px;
 }
+
+@media screen and (max-width: 1400px) {
+  .scoreboardClass {
+    z-index: 3;
+    width: 100%;
+  }
+}
