@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import CardHolder from './CardHolder';
 import CardAnimation from './CardAnimation'
@@ -7,8 +6,9 @@ import Menu from './Menu'
 import Scoreboard from './Scoreboard'
 import animateCard from './CardAnimation'
 import getCardStyle from './cardStyle'
-import React from 'react';
+import React from 'react'
 import './Cards.css'
+import cellphone from './assets/cellphone.svg'
 
 function shuffle(array) {
     let currentIndex = array.length,  randomIndex;
@@ -297,6 +297,7 @@ class App extends React.Component {
 
     return (
       <>
+      <div className="TurnAroundOverlay"><div className="cellphoneContainer"><div className="cellphoneDiv cellphoneContainerEl"><img src={cellphone}></img></div><div className="cellphoneContainerEl">Ruota il tuo dispositivo per una visualizzazione migliore.</div></div></div>
       <div id="animationPlaceholderId" className="animationPlaceholderDiv">{this.state.animating ? <div className="whiteSquare"></div> : null}</div>
       {!this.state.playStarted ? <Menu finished={this.state.finished} winner={this.state.winner} playAgain={this.playAgain}></Menu> : <Scoreboard cpuPoints={this.state.cpuPoints} playerPoints={this.state.playerPoints}></Scoreboard>}
       <Deck deckId={"deckId"} deckPlaceholderId={"deckPlaceholderId"} deck={this.state.deck}></Deck>
